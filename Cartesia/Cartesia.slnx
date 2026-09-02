@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Cartesia.Core.Tests/Cartesia.Core.Tests.csproj" />
+  <Project Path="Cartesia.Core/Cartesia.Core.csproj" />
+  <Project Path="Cartesia.SkiaSharp/Cartesia.SkiaSharp.csproj" />
+</Solution>
