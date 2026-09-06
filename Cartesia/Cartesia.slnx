@@ -1,5 +1,9 @@
 <Solution>
   <Project Path="Cartesia.Core.Tests/Cartesia.Core.Tests.csproj" />
   <Project Path="Cartesia.Core/Cartesia.Core.csproj" />
-  <Project Path="Cartesia.SkiaSharp/Cartesia.SkiaSharp.csproj" />
+  <Project Path="Cartesia.Render/Cartesia.Render.csproj" />
+  <Project Path="Cartesia.WinUI.Test/Cartesia.WinUI.Test.csproj" Id="0dd782ee-47d3-4ace-8d01-ca24ba060b6b">
+    <Platform Project="x64" />
+    <Deploy />
+  </Project>
 </Solution>

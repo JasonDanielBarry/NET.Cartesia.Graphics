@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Cartesia.WinUI.Test (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Cartesia.WinUI.Test (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
