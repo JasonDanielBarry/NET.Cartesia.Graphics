@@ -3,7 +3,7 @@ using Cartesia.Core.Mapping;
 using Cartesia.Render.Utilities;
 using SkiaSharp;
 
-namespace Cartesia.Render.Entities.Geometry
+namespace Cartesia.Render.Entities.Utilities
 {
 	internal static class GeometryShared
 	{

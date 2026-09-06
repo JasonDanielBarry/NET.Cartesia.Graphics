@@ -1,6 +1,7 @@
 ﻿using Cartesia.Core.Geometry;
 using Cartesia.Core.Mapping;
 using Cartesia.Render.Entities.Base;
+using Cartesia.Render.Entities.Utilities;
 using Cartesia.Render.Rendering;
 using SkiaSharp;
 
