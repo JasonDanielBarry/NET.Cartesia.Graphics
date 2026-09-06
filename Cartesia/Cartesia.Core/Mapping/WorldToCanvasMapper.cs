@@ -3,7 +3,7 @@ using Cartesia.Core.Math;
 
 namespace Cartesia.Core.Mapping
 {
-	internal sealed class WorldToCanvasMapper(int canvasWidthIn, int canvasHeightIn, Box worldViewPortIn)
+	public sealed class WorldToCanvasMapper(int canvasWidthIn, int canvasHeightIn, Box worldViewPortIn)
 	{
 		private readonly AffineTransform
 			_canvasToWorldTransform = BuildCanvasToWorldTransform(canvasWidthIn, canvasHeightIn, worldViewPortIn),
