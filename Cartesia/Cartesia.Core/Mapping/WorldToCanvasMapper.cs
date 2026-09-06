@@ -29,6 +29,26 @@ namespace Cartesia.Core.Mapping
 			);
 		}
 
+		public double WorldDXToCanvasDL(double dXIn)
+		{
+			return dXIn * canvasWidthIn / worldViewPortIn.Width;
+		}
+
+		public double CanvasDLToWorldDX(double dLIn)
+		{
+			return dLIn * worldViewPortIn.Width / canvasWidthIn;
+		}
+
+		public double WorldDYToCanvasDT(double dYIn)
+		{
+			return -dYIn * canvasWidthIn / worldViewPortIn.Height;
+		}
+
+		public double CanvasDTToWorldDY(double dTIn)
+		{
+			return -dTIn * worldViewPortIn.Height / canvasHeightIn;
+		}
+
 		public Point MapWorldToCanvas(Point worldPointIn)
 		{
 			return worldPointIn.Transform(_worldToCanvasTransform);
