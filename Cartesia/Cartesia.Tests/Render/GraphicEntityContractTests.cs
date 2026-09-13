@@ -1,5 +1,7 @@
 using Cartesia.Core.Geometry;
+using Cartesia.Core.Shapes;
 using Cartesia.Render.Entities.Geometry;
+using Cartesia.Render.Entities.Shape;
 using Cartesia.Render.Rendering;
 using Cartesia.Tests.Helpers;
 using SkiaSharp;
@@ -58,6 +60,22 @@ public sealed class GraphicEntityContractTests
     }
 
     [Fact]
+    public void PolygonDraw_DoesNotTouchMatrix()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var polygon = new GraphicPolygon(
+            [new Point(100, 100), new Point(300, 100), new Point(200, 300)],
+            new Brush(SKColors.Yellow), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        polygon.Precompute(mapper);
+        surface.Canvas.Translate(10, 0);
+        polygon.Draw(surface.Canvas);
+
+        TestHelpers.Near(10, surface.Canvas.TotalMatrix.TransX, 1e-6);
+    }
+
+    [Fact]
     public void AllEntityTypes_PrecomputeThenDraw_DoNotThrow()
     {
         var mapper = TestHelpers.SquareMapper(400);
@@ -66,6 +84,15 @@ public sealed class GraphicEntityContractTests
             new GraphicLine(new Point(0, 0), new Point(10, 10), new Pen(2, SKColors.Red, [])),
             new GraphicPolyline([new Point(0, 0), new Point(10, 10)], new Brush(SKColors.Transparent), new Pen(2, SKColors.Red, [])),
             new GraphicPolygon([new Point(0, 0), new Point(10, 0), new Point(5, 8)], new Brush(SKColors.Yellow), new Pen(2, SKColors.Red, [])),
+            new GraphicRectangle(
+                new RectangleProperties(20, 10, 0, 0, 0, HorizontalAlignment.Centre, VerticalAlignment.Centre, new Point(200, 200)),
+                new Brush(SKColors.Blue), Pen.None),
+            new GraphicEllipse(
+                new EllipseProperties(20, 10, 0, HorizontalAlignment.Centre, VerticalAlignment.Centre, new Point(100, 100)),
+                new Brush(SKColors.Blue), Pen.None),
+            new GraphicArc(
+                new ArcProperties(30, 30, -90, 90, 0, new Point(300, 300)),
+                new Pen(2, SKColors.Red, [])),
         ];
 
         using SKSurface surface = TestHelpers.CreateSurface();
@@ -76,5 +103,10 @@ public sealed class GraphicEntityContractTests
             var ex = Record.Exception(() => entity.Draw(surface.Canvas));
             Assert.Null(ex);
         }
+
+        // Spot pixels: rectangle centre, ellipse centre, arc right rim all painted.
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 200, 200));
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 100, 300));
+        TestHelpers.AssertRed(TestHelpers.Sample(surface, 330, 100));
     }
 }

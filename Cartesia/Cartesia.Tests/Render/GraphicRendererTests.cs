@@ -146,6 +146,8 @@ public sealed class GraphicRendererTests
         var ex = Record.Exception(() => RenderOn(entities, surface));
 
         Assert.Null(ex);
+        // x=200 line (i=200,600) paints the column: every entity precomputed, none lost.
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 200, 200));
     }
 
     [Fact]
@@ -169,6 +171,27 @@ public sealed class GraphicRendererTests
         var ex = Record.Exception(() => renderer.Render(mapper, surface.Canvas));
 
         Assert.Null(ex);
+
+        // One pixel per entity kind proves each rendered (800-canvas, mapper above).
+        surface.Canvas.Flush();
+        using SKImage image = surface.Snapshot();
+        using SKBitmap bitmap = SKBitmap.FromImage(image);
+        // Line (50,100)-(200,250) midpoint world (125,175) -> canvas (125,625): blue.
+        TestHelpers.AssertBlue(bitmap.GetPixel(125, 625));
+        // Polyline segment-1 midpoint world (125,275) -> canvas (125,525): green
+        // (vertex (200,450) sits inside the yellow polygon, so it cannot prove the polyline).
+        TestHelpers.AssertGreenISH(bitmap.GetPixel(125, 525));
+        // Polygon centroid world (183,367) -> canvas (183,433): yellow fill.
+        TestHelpers.AssertYellow(bitmap.GetPixel(183, 433));
+        // Rectangle box-centre world (675,200) rotated 30deg about handle (600,200)
+        // -> world (665,237.5) -> canvas (665,562): blue fill.
+        // (The handle itself is a box edge midpoint, unsafe to sample after rotation.)
+        TestHelpers.AssertBlue(bitmap.GetPixel(665, 562));
+        // Ellipse box-centre world (675,500) rotated 15deg about handle (600,500)
+        // -> world (672.4,519.4) -> canvas (672,281): green fill.
+        TestHelpers.AssertGreenISH(bitmap.GetPixel(672, 281));
+        // Arc right half: world box (250,500)-(550,700) -> canvas x 250..550, y 100..300; rim (550,200) red.
+        TestHelpers.AssertRed(bitmap.GetPixel(550, 200));
     }
 
     [Fact]
@@ -189,6 +212,72 @@ public sealed class GraphicRendererTests
         renderer.SetEntities([BlueDiagonal()]);
 
         Assert.ThrowsAny<Exception>(() => renderer.Render(TestHelpers.SquareMapper(), null!));
+    }
+
+    [Fact]
+    public void Render_WithoutSetEntities_DoesNotThrow_DocumentsEmptyLoop()
+    {
+        // _entities is null! but _entityCount is 0, so neither loop body runs.
+        using SKSurface surface = TestHelpers.CreateSurface();
+
+        var ex = Record.Exception(() =>
+            new GraphicRenderer().Render(TestHelpers.SquareMapper(), surface.Canvas));
+
+        Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+    }
+
+    [Fact]
+    public void Render_EmptyEntities_NullMapperAndCanvas_DoNotThrow_DocumentsMasking()
+    {
+        // Zero-count loops never touch mapper/canvas: nulls are masked, not validated.
+        var renderer = new GraphicRenderer();
+        renderer.SetEntities([]);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+
+        Assert.Null(Record.Exception(() => renderer.Render(null!, surface.Canvas)));
+        Assert.Null(Record.Exception(() => renderer.Render(TestHelpers.SquareMapper(), null!)));
+    }
+
+    [Fact]
+    public void SetEntities_SnapshotsAgainstClearAndReplace()
+    {
+        List<GraphicEntity> source = [BlueDiagonal()];
+        var renderer = new GraphicRenderer();
+        renderer.SetEntities(source);
+
+        source[0] = YellowTriangle();
+        source.Clear();
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        renderer.Render(TestHelpers.SquareMapper(), surface.Canvas);
+
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 200, 200));
+        TestHelpers.AssertWhite(TestHelpers.SampleWorld(surface, TestHelpers.SquareMapper(), new Point(200, 167)));
+    }
+
+    [Fact]
+    public void Render_MixedShapeAndLine_WithCallerTransform_ShapeWipesItForLaterEntities()
+    {
+        // Caller translates, then shape.Draw calls ResetMatrix: the line draws UNSHIFTED.
+        var rect = new GraphicRectangle(
+            new RectangleProperties(100, 60, 0, 0, 0,
+                HorizontalAlignment.Centre, VerticalAlignment.Centre, new Point(200, 200)),
+            new Brush(SKColors.Blue), Pen.None);
+        var renderer = new GraphicRenderer();
+        renderer.SetEntities([rect, BlueDiagonal()]);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        surface.Canvas.Translate(50, 0);
+        renderer.Render(TestHelpers.SquareMapper(), surface.Canvas);
+
+        // Unshifted diagonal passes (300,300); shifted would pass (100,50) instead.
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 300, 300));
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 100, 50));
+        SKMatrix m = surface.Canvas.TotalMatrix;
+        TestHelpers.Near(1, m.ScaleX, 1e-6);
+        TestHelpers.Near(0, m.TransX, 1e-6);
     }
 
     private static void AssertChannelHigh(byte channel, string name) =>
