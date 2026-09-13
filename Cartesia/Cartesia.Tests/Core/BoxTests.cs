@@ -94,6 +94,15 @@ public sealed class BoxTests
     }
 
     [Fact]
+    public void FromBoxes_EmptyList_ProducesInvertedSentinelBox()
+    {
+        Box merged = Box.FromBoxes([]);
+
+        TestHelpers.Near(new Point(1e9, 1e9), merged.BottomLeft);
+        TestHelpers.Near(new Point(-1e9, -1e9), merged.TopRight);
+    }
+
+    [Fact]
     public void FromBoxes_OverlappingBoxes_SpansExtremes()
     {
         Box a = new([new Point(0, 0), new Point(10, 10)]);
@@ -103,6 +112,18 @@ public sealed class BoxTests
 
         TestHelpers.Near(new Point(0, 0), merged.BottomLeft);
         TestHelpers.Near(new Point(10, 10), merged.TopRight);
+    }
+
+    [Fact]
+    public void FromBoxes_NegativeBoxes_SpansCorrectly()
+    {
+        Box a = new([new Point(-8, -8), new Point(-2, -2)]);
+        Box b = new([new Point(-5, -9), new Point(-1, -1)]);
+
+        Box merged = Box.FromBoxes([a, b]);
+
+        TestHelpers.Near(new Point(-8, -9), merged.BottomLeft);
+        TestHelpers.Near(new Point(-1, -1), merged.TopRight);
     }
 
     [Fact]
