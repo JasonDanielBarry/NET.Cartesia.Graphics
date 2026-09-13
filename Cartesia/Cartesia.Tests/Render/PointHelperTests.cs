@@ -41,4 +41,36 @@ public sealed class PointHelperTests
         Assert.Equal(-1, sk.X);
         Assert.Equal(-1, sk.Y);
     }
+
+    [Fact]
+    public void ToSKPoint_ExactFloatBits()
+    {
+        var sk = new Point(123456.789, -0.1).ToSKPoint();
+
+        Assert.Equal((float)123456.789, sk.X);
+        Assert.Equal((float)-0.1, sk.Y);
+    }
+
+    [Fact]
+    public void ToSKPoint_NaN_Propagates()
+    {
+        var sk = new Point(double.NaN, 0).ToSKPoint();
+
+        Assert.True(float.IsNaN(sk.X));
+    }
+
+    [Fact]
+    public void ToSKPoint_Infinities_Propagate()
+    {
+        Assert.True(float.IsPositiveInfinity(new Point(double.PositiveInfinity, 0).ToSKPoint().X));
+        Assert.True(float.IsNegativeInfinity(new Point(0, double.NegativeInfinity).ToSKPoint().Y));
+    }
+
+    [Fact]
+    public void ToSKPoint_Overflow_ToInfinity()
+    {
+        var sk = new Point(1e300, 0).ToSKPoint();
+
+        Assert.True(float.IsPositiveInfinity(sk.X));
+    }
 }

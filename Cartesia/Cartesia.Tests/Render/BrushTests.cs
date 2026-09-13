@@ -1,4 +1,7 @@
+using Cartesia.Core.Geometry;
+using Cartesia.Render.Entities.Geometry;
 using Cartesia.Render.Rendering;
+using Cartesia.Tests.Helpers;
 using SkiaSharp;
 
 namespace Cartesia.Tests.Render;
@@ -73,5 +76,39 @@ public sealed class BrushTests
 
         Assert.NotSame(a, b);
         Assert.Equal(a.Color, b.Color);
+    }
+
+    [Fact]
+    public void AlphaZeroNonBlack_IsVisibleYetFullyTransparent()
+    {
+        // != Transparent(0,0,0,0) by RGB, so IsVisible is true despite alpha 0.
+        Brush brush = new(new SKColor(255, 0, 0, 0));
+
+        Assert.True(brush.IsVisible);
+    }
+
+    [Fact]
+    public void AlphaZeroFill_DrawsNothingVisible()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var polygon = new GraphicPolygon(
+            [new Point(100, 100), new Point(300, 100), new Point(200, 300)],
+            new Brush(new SKColor(255, 255, 0, 0)), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        polygon.Precompute(mapper);
+        polygon.Draw(surface.Canvas);
+
+        TestHelpers.AssertWhite(
+            TestHelpers.SampleWorld(surface, mapper, new Point(200, 167)));
+    }
+
+    [Fact]
+    public void None_ToSKPaint_IsFillAntialiased()
+    {
+        using SKPaint paint = Brush.None.ToSKPaint();
+
+        Assert.Equal(SKPaintStyle.Fill, paint.Style);
+        Assert.True(paint.IsAntialias);
     }
 }
