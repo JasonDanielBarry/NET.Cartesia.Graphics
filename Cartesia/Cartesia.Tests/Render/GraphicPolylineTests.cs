@@ -132,4 +132,108 @@ public sealed class GraphicPolylineTests
         TestHelpers.Near(0, box.Width);
         TestHelpers.Near(0, box.Height);
     }
+
+    [Fact]
+    public void Ctor_NullVertices_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new GraphicPolyline(null!, AnyFill, Stroke()));
+    }
+
+    [Fact]
+    public void BoundingBox_EmptyVertices_InvertedSentinelBox()
+    {
+        var line = new GraphicPolyline([], AnyFill, Stroke());
+
+        var box = line.BoundingBox();
+
+        TestHelpers.Near(-2e9, box.Width);
+        TestHelpers.Near(-2e9, box.Height);
+    }
+
+    [Fact]
+    public void Precompute_EmptyVertices_ThrowsIndexOutOfRange()
+    {
+        var line = new GraphicPolyline([], AnyFill, Stroke());
+
+        Assert.Throws<IndexOutOfRangeException>(() => line.Precompute(TestHelpers.SquareMapper(400)));
+    }
+
+    [Fact]
+    public void Ctor_CopiesListSource_MutatingListHasNoEffect()
+    {
+        List<Point> source = [new Point(0, 0), new Point(10, 10)];
+        var line = new GraphicPolyline(source, AnyFill, Stroke());
+
+        source.Clear();
+
+        TestHelpers.Near(new Point(10, 10), line.BoundingBox().TopRight);
+    }
+
+    [Fact]
+    public void Draw_VisibleFillWithInvisibleStroke_PaintsNothing()
+    {
+        // Fill is ignored entirely: even a red fill with Pen.None paints no pixel.
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicPolyline(
+            [new Point(100, 100), new Point(200, 300), new Point(300, 100)],
+            new Brush(SKColors.Red), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        line.Precompute(mapper);
+        line.Draw(surface.Canvas);
+
+        TestHelpers.AssertWhite(TestHelpers.SampleWorld(surface, mapper, new Point(200, 150)));
+        TestHelpers.AssertWhite(TestHelpers.SampleWorld(surface, mapper, new Point(200, 300)));
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 300));
+    }
+
+    [Fact]
+    public void Draw_OpenPath_ClosingEdgeAbsent()
+    {
+        // Closing edge (200,300)-(100,100) midpoint world (150,200) -> canvas (150,200):
+        // white for the open polyline (a closed polygon paints it; see GraphicPolygonTests).
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicPolyline(
+            [new Point(100, 100), new Point(300, 100), new Point(200, 300)],
+            Brush.None, Stroke());
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        line.Precompute(mapper);
+        line.Draw(surface.Canvas);
+
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 150, 200));
+    }
+
+    [Fact]
+    public void Draw_SingleVertex_PaintsNothingWithoutThrowing()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicPolyline([new Point(200, 200)], AnyFill, Stroke());
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        line.Precompute(mapper);
+
+        var ex = Record.Exception(() => line.Draw(surface.Canvas));
+
+        Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+    }
+
+    [Fact]
+    public void Precompute_NullMapper_Throws()
+    {
+        var line = new GraphicPolyline([new Point(0, 0), new Point(1, 1)], AnyFill, Stroke());
+
+        Assert.ThrowsAny<Exception>(() => line.Precompute(null!));
+    }
+
+    [Fact]
+    public void Draw_NullCanvas_Throws()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicPolyline([new Point(0, 0), new Point(1, 1)], AnyFill, Stroke());
+        line.Precompute(mapper);
+
+        Assert.ThrowsAny<Exception>(() => line.Draw(null!));
+    }
 }

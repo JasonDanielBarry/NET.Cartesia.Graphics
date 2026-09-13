@@ -123,9 +123,10 @@ public sealed class GraphicLineTests
     }
 
     [Fact]
-    public void Draw_WithoutPrecompute_DoesNotThrow_DrawsAtOrigin()
+    public void Draw_WithoutPrecompute_DoesNotThrow_PaintsNothing()
     {
         // Endpoints default to (0,0); SKPaint exists from ctor, so no crash.
+        // Zero-length line with default butt caps paints no pixel.
         var line = new GraphicLine(new Point(50, 350), new Point(350, 50), Stroke());
 
         using SKSurface surface = TestHelpers.CreateSurface();
@@ -133,6 +134,80 @@ public sealed class GraphicLineTests
         var ex = Record.Exception(() => line.Draw(surface.Canvas));
 
         Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 0, 0));
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 1, 1));
+    }
+
+    [Fact]
+    public void Draw_PenNone_PaintsNothing()
+    {
+        // GraphicLine.Draw has no IsVisible gate, but a transparent zero-width paint changes no pixel.
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicLine(new Point(50, 350), new Point(350, 50), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        line.Precompute(mapper);
+        line.Draw(surface.Canvas);
+
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 100, 100));
+    }
+
+    [Fact]
+    public void BoundingBox_HorizontalLine_ZeroHeight()
+    {
+        var line = new GraphicLine(new Point(100, 200), new Point(300, 200), Stroke());
+
+        var box = line.BoundingBox();
+
+        TestHelpers.Near(200, box.Width);
+        TestHelpers.Near(0, box.Height);
+    }
+
+    [Fact]
+    public void BoundingBox_VerticalLine_ZeroWidth()
+    {
+        var line = new GraphicLine(new Point(200, 100), new Point(200, 300), Stroke());
+
+        var box = line.BoundingBox();
+
+        TestHelpers.Near(0, box.Width);
+        TestHelpers.Near(200, box.Height);
+    }
+
+    [Fact]
+    public void Draw_DashedStroke_PaintsDashesAndGaps()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        // Canvas row y=200, dash [10,10] phase 0: x 100..110 on, 110..120 off, 120..130 on.
+        var line = new GraphicLine(
+            new Point(100, 200), new Point(300, 200), new Pen(5, SKColors.Red, [10, 10]));
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        line.Precompute(mapper);
+        line.Draw(surface.Canvas);
+
+        TestHelpers.AssertRed(TestHelpers.Sample(surface, 105, 200));
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 115, 200));
+        TestHelpers.AssertRed(TestHelpers.Sample(surface, 125, 200));
+    }
+
+    [Fact]
+    public void Precompute_NullMapper_Throws()
+    {
+        var line = new GraphicLine(new Point(0, 0), new Point(1, 1), Stroke());
+
+        Assert.ThrowsAny<Exception>(() => line.Precompute(null!));
+    }
+
+    [Fact]
+    public void Draw_NullCanvas_Throws()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicLine(new Point(0, 0), new Point(1, 1), Stroke());
+        line.Precompute(mapper);
+
+        Assert.ThrowsAny<Exception>(() => line.Draw(null!));
     }
 
     [Fact]
