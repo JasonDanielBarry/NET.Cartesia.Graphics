@@ -1,6 +1,6 @@
 ﻿namespace Cartesia.Core.Shapes
 {
-	public readonly struct Arc(double radiusXIn, double radiusYIn, double startAngleIn, double endAngleIn, double rotationIn)
+	public readonly struct ArcProperties(double radiusXIn, double radiusYIn, double startAngleIn, double endAngleIn, double rotationIn)
 	{
 		public readonly double
 			RadiusX = radiusXIn,
