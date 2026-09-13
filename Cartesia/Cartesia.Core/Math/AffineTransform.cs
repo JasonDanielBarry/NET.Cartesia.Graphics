@@ -52,9 +52,11 @@ namespace Cartesia.Core.Math
 
 		public AffineTransform Rotate(double angleIn)
 		{
+			double angleRad = angleIn * PI / 180;
+
 			AffineTransform rotationTransform = new AffineTransform(
-				Cos(angleIn), -Sin(angleIn), 0,
-				Sin(angleIn), Cos(angleIn), 0
+				Cos(angleRad), -Sin(angleRad), 0,
+				Sin(angleRad), Cos(angleRad), 0
 			);
 
 			return Multiply(rotationTransform, this);
