@@ -88,8 +88,9 @@ internal static class TestHelpers
 
     public static void AssertGreenISH(SKColor color)
     {
+        // SKColors.Green is (0,128,0); SKColors.Lime is (0,255,0). Accept both.
         AssertChannelLow(color.Red, "Red");
-        AssertChannelHigh(color.Green, "Green");
+        Assert.True(color.Green >= 100, $"Expected Green >= 100 but was {color.Green}.");
         AssertChannelLow(color.Blue, "Blue");
     }
 
