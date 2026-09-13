@@ -150,6 +150,127 @@ public sealed class GraphicEllipseTests
     }
 
     [Fact]
+    public void BoundingBox_Minus90_Equals270()
+    {
+        var neg = new GraphicEllipse(Props(rot: -90), new Brush(SKColors.Blue), Pen.None);
+        var pos = new GraphicEllipse(Props(rot: 270), new Brush(SKColors.Blue), Pen.None);
+
+        TestHelpers.Near(neg.BoundingBox().BottomLeft, pos.BoundingBox().BottomLeft, 1e-9);
+        TestHelpers.Near(neg.BoundingBox().TopRight, pos.BoundingBox().TopRight, 1e-9);
+    }
+
+    [Fact]
+    public void BoundingBox_RightBottom_ExtendsNegativeFromHandle()
+    {
+        var ellipse = new GraphicEllipse(
+            Props(ha: HorizontalAlignment.Right, va: VerticalAlignment.Bottom, hx: 5, hy: 5),
+            new Brush(SKColors.Blue), Pen.None);
+
+        var box = ellipse.BoundingBox();
+
+        TestHelpers.Near(new Point(-95, 5), box.BottomLeft);
+        TestHelpers.Near(new Point(5, 65), box.TopRight);
+    }
+
+    [Fact]
+    public void Draw_FillAndStroke_PaintsBoth()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var ellipse = new GraphicEllipse(Props(), new Brush(SKColors.Yellow), new Pen(5, SKColors.Blue, []));
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        ellipse.Precompute(mapper);
+        ellipse.Draw(surface.Canvas);
+
+        TestHelpers.AssertYellow(TestHelpers.Sample(surface, 200, 200));
+        TestHelpers.AssertBlue(TestHelpers.Sample(surface, 200, 170));
+    }
+
+    [Fact]
+    public void Draw_RotationSign_Matters_AsymmetricAnglesDiffer()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+
+        using SKSurface plus = TestHelpers.CreateSurface();
+        new GraphicEllipse(Props(rot: 30), new Brush(SKColors.Blue), Pen.None)
+            .Also(e => e.Precompute(mapper)).Also(e => e.Draw(plus.Canvas));
+
+        using SKSurface minus = TestHelpers.CreateSurface();
+        new GraphicEllipse(Props(rot: -30), new Brush(SKColors.Blue), Pen.None)
+            .Also(e => e.Precompute(mapper)).Also(e => e.Draw(minus.Canvas));
+
+        TestHelpers.AssertBlue(TestHelpers.Sample(plus, 200, 200));
+        TestHelpers.AssertBlue(TestHelpers.Sample(minus, 200, 200));
+        Assert.True(TestHelpers.SurfacesDiffer(plus, minus));
+    }
+
+    [Fact]
+    public void Draw_ZeroWidth_PaintsNothingWithoutThrowing()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var ellipse = new GraphicEllipse(Props(w: 0), new Brush(SKColors.Blue), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        ellipse.Precompute(mapper);
+
+        var ex = Record.Exception(() => ellipse.Draw(surface.Canvas));
+
+        Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+    }
+
+    [Fact]
+    public void Draw_ZeroHeight_PaintsNothingWithoutThrowing()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var ellipse = new GraphicEllipse(Props(h: 0), new Brush(SKColors.Blue), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+        ellipse.Precompute(mapper);
+
+        var ex = Record.Exception(() => ellipse.Draw(surface.Canvas));
+
+        Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+    }
+
+    [Fact]
+    public void Draw_NonSquareMapper_PaintsMappedAxisEndpoints()
+    {
+        // 800x400 canvas, 200x100 world: ellipse 100x50 centre (100,50) -> canvas x 200..600, y 100..300.
+        var mapper = TestHelpers.MapperFor(800, 400, 200, 100);
+        var ellipse = new GraphicEllipse(
+            new EllipseProperties(100, 50, 0,
+                HorizontalAlignment.Centre, VerticalAlignment.Centre, new Point(100, 50)),
+            new Brush(SKColors.Blue), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface(800, 400);
+        ellipse.Precompute(mapper);
+        ellipse.Draw(surface.Canvas);
+
+        surface.Canvas.Flush();
+        using SKImage image = surface.Snapshot();
+        using SKBitmap bitmap = SKBitmap.FromImage(image);
+        TestHelpers.AssertBlue(bitmap.GetPixel(400, 200));
+        TestHelpers.AssertBlue(bitmap.GetPixel(595, 200));
+        TestHelpers.AssertBlue(bitmap.GetPixel(400, 105));
+        TestHelpers.AssertWhite(bitmap.GetPixel(100, 200));
+    }
+
+    [Fact]
+    public void Draw_WithoutPrecompute_DoesNotThrow_PaintsNothing()
+    {
+        var ellipse = new GraphicEllipse(Props(), new Brush(SKColors.Blue), Pen.None);
+
+        using SKSurface surface = TestHelpers.CreateSurface();
+
+        var ex = Record.Exception(() => ellipse.Draw(surface.Canvas));
+
+        Assert.Null(ex);
+        TestHelpers.AssertWhite(TestHelpers.Sample(surface, 200, 200));
+    }
+
+    [Fact]
     public void Draw_ResetsCallerTransform()
     {
         var mapper = TestHelpers.SquareMapper(400);

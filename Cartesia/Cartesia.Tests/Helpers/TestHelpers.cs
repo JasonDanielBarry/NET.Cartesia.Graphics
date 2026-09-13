@@ -8,6 +8,12 @@ internal static class TestHelpers
 {
     public const double Tol = 1e-9;
 
+    public static T Also<T>(this T value, Action<T> action)
+    {
+        action(value);
+        return value;
+    }
+
     public static void Near(double expected, double actual, double tol = Tol)
     {
         Assert.True(Math.Abs(expected - actual) <= tol, $"Expected {expected} +/- {tol} but was {actual}.");
@@ -99,5 +105,41 @@ internal static class TestHelpers
         AssertChannelHigh(color.Red, "Red");
         AssertChannelHigh(color.Green, "Green");
         AssertChannelLow(color.Blue, "Blue");
+    }
+
+    public static bool IsReddish(SKColor color) =>
+        color.Red >= 200 && color.Green <= 100 && color.Blue <= 100;
+
+    public static bool AnyPixelMatches(SKSurface surface, Func<SKColor, bool> predicate,
+        int width = 400, int height = 400, int step = 4)
+    {
+        surface.Canvas.Flush();
+        using SKImage image = surface.Snapshot();
+        using SKBitmap bitmap = SKBitmap.FromImage(image);
+
+        for (int y = 0; y < height; y += step)
+            for (int x = 0; x < width; x += step)
+                if (predicate(bitmap.GetPixel(x, y)))
+                    return true;
+
+        return false;
+    }
+
+    public static bool SurfacesDiffer(SKSurface a, SKSurface b,
+        int width = 400, int height = 400, int step = 5)
+    {
+        a.Canvas.Flush();
+        b.Canvas.Flush();
+        using SKImage imageA = a.Snapshot();
+        using SKImage imageB = b.Snapshot();
+        using SKBitmap bitmapA = SKBitmap.FromImage(imageA);
+        using SKBitmap bitmapB = SKBitmap.FromImage(imageB);
+
+        for (int y = 0; y < height; y += step)
+            for (int x = 0; x < width; x += step)
+                if (bitmapA.GetPixel(x, y) != bitmapB.GetPixel(x, y))
+                    return true;
+
+        return false;
     }
 }
