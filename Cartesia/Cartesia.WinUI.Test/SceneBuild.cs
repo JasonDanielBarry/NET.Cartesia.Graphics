@@ -1,6 +1,8 @@
 ﻿using Cartesia.Core.Geometry;
+using Cartesia.Core.Shapes;
 using Cartesia.Render.Entities.Base;
 using Cartesia.Render.Entities.Geometry;
+using Cartesia.Render.Entities.Shape;
 using Cartesia.Render.Rendering;
 using SkiaSharp;
 using System.Collections.Generic;
@@ -9,6 +11,39 @@ namespace Cartesia.WinUI.Test
 {
 	internal static class SceneBuild
 	{
+		private static IReadOnlyList<GraphicEntity> ArcEntities()
+		{
+			ArcProperties
+				arcProp1 = new ArcProperties(150, 100, -90, 90, 0),
+				arcProp2 = new ArcProperties(125, 75, -90, 90, -90);
+
+			GraphicArc
+				graphicArc1 = new GraphicArc(
+					arcProp1,
+					new Point(400, 600),
+					new Pen(3, SKColors.Red, [])
+				),
+				graphicArc2 = new GraphicArc(
+					arcProp2,
+					new Point(400, 600),
+					new Pen(3, SKColors.Blue, [])
+				);
+
+			GraphicLine
+				line1 = new GraphicLine(
+					new Point(400 - 10, 600),
+					new Point(400 + 10, 600),
+					new Pen(2, SKColors.White, [])
+				),
+				line2 = new GraphicLine(
+					new Point(400, 600 - 10),
+					new Point(400, 600 + 10),
+					new Pen(2, SKColors.White, [])
+				);
+
+			return [line1, line2, graphicArc1, graphicArc2];
+		}
+
 		private static IReadOnlyList<GraphicEntity> LineEntities()
 		{
 			GraphicLine
@@ -78,6 +113,10 @@ namespace Cartesia.WinUI.Test
 		internal static IReadOnlyList<GraphicEntity> BuildScene()
 		{
 			List<GraphicEntity> entities = new();
+
+			entities.AddRange(
+				ArcEntities()
+			);
 
 			entities.AddRange(
 				LineEntities()
