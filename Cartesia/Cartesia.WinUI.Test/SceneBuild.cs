@@ -167,6 +167,69 @@ namespace Cartesia.WinUI.Test
 			return [polygon1, polygon2];
 		}
 
+		private static IReadOnlyList<GraphicEntity> RectangleEntities()
+		{
+			Point handlePoint = new Point(600, 200);
+
+			RectangleProperties
+				ellipseProp1 = new RectangleProperties(
+					150, 75,
+					15, 15,
+					30,
+					HorizontalAlignment.Left,
+					VerticalAlignment.Centre,
+					handlePoint
+				),
+				ellipseProp2 = new RectangleProperties(
+					150, 75,
+					15, 15,
+					30,
+					HorizontalAlignment.Right,
+					VerticalAlignment.Centre,
+					handlePoint
+				),
+				ellipseProp3 = new RectangleProperties(
+					75, 150,
+					15, 15,
+					30,
+					HorizontalAlignment.Centre,
+					VerticalAlignment.Top,
+					handlePoint
+				),
+				ellipseProp4 = new RectangleProperties(
+					75, 150,
+					15, 15,
+					30,
+					HorizontalAlignment.Centre,
+					VerticalAlignment.Bottom,
+					handlePoint
+				);
+
+			GraphicRectangle
+				graphicRectangle1 = new GraphicRectangle(
+					ellipseProp1,
+					new Brush(SKColors.Blue),
+					new Pen(5, SKColors.OrangeRed, [])
+				),
+				graphicRectangle2 = new GraphicRectangle(
+					ellipseProp2,
+					new Brush(SKColors.Blue),
+					new Pen(5, SKColors.OrangeRed, [])
+				),
+				graphicRectangle3 = new GraphicRectangle(
+					ellipseProp3,
+					new Brush(SKColors.Blue),
+					new Pen(5, SKColors.OrangeRed, [])
+				),
+				graphicRectangle4 = new GraphicRectangle(
+					ellipseProp4,
+					new Brush(SKColors.Blue),
+					new Pen(5, SKColors.OrangeRed, [])
+				);
+
+			return [graphicRectangle1, graphicRectangle2, graphicRectangle3, graphicRectangle4];
+		}
+
 		internal static IReadOnlyList<GraphicEntity> BuildScene()
 		{
 			List<GraphicEntity> entities = new();
@@ -189,6 +252,10 @@ namespace Cartesia.WinUI.Test
 
 			entities.AddRange(
 				PolygonEntities()
+			);
+
+			entities.AddRange(
+				RectangleEntities()
 			);
 
 			return entities.AsReadOnly();

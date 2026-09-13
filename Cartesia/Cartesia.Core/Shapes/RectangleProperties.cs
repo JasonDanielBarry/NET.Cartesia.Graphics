@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using Cartesia.Core.Geometry;
 
 namespace Cartesia.Core.Shapes
 {
@@ -16,7 +16,7 @@ namespace Cartesia.Core.Shapes
 			CornerRadiusY = cornerRadiusYIn,
 			Rotation = rotationIn;
 
-		public readonly HorizontalAlignment HorizontalAlignmentIn = horizontalAlignmentIn;
+		public readonly HorizontalAlignment HorizontalAlignment = horizontalAlignmentIn;
 
 		public readonly VerticalAlignment VerticalAlignment = verticalAlignmentIn;
 

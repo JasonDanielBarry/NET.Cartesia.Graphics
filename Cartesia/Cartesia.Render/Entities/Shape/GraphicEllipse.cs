@@ -17,16 +17,10 @@ namespace Cartesia.Render.Entities.Shape
 		private protected override void DrawShape(SKCanvas canvasIn)
 		{
 			if (_fillBrush.IsVisible)
-				canvasIn.DrawOval(
-					_shapeRect,
-					_fillPaint
-				);
+				canvasIn.DrawOval(_shapeRect, _fillPaint);
 
 			if (_strokePen.IsVisible)
-				canvasIn.DrawOval(
-					_shapeRect,
-					_strokePaint
-				);
+				canvasIn.DrawOval(_shapeRect, _strokePaint);
 		}
 	}
 }
