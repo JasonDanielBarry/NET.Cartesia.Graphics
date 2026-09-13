@@ -32,7 +32,5 @@ namespace Cartesia.Render.Entities.Geometry
 		{
 			_path = GeometryShared.BuildSKPath(true, _vertices, _pathBuilder, mapperIn);
 		}
-
-		public Point[] Vertices => _vertices;
 	}
 }

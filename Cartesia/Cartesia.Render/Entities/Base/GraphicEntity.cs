@@ -31,8 +31,5 @@ namespace Cartesia.Render.Entities.Base
 		internal abstract void Draw(SKCanvas canvasIn);
 
 		internal abstract void Precompute(WorldToCanvasMapper mapperIn);
-
-		public Brush Fill => _fillBrush;
-		public Pen Stroke => _strokePen;
 	}
 }

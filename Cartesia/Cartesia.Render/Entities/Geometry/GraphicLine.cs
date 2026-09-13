@@ -14,8 +14,8 @@ namespace Cartesia.Render.Entities.Geometry
 		internal override Box BoundingBox()
 		{
 			return new Box([
-				StartPoint,
-				EndPoint
+				startPointIn,
+				endPointIn
 			]);
 		}
 
@@ -33,8 +33,5 @@ namespace Cartesia.Render.Entities.Geometry
 			_start = startPointCanvas.ToSKPoint();
 			_end = endPointCanvas.ToSKPoint();
 		}
-
-		public Point StartPoint => startPointIn;
-		public Point EndPoint => endPointIn;
 	}
 }

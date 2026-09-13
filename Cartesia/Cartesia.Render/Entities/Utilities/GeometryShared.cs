@@ -24,9 +24,7 @@ namespace Cartesia.Render.Entities.Utilities
 			}
 
 			if (closeIn)
-			{
 				pathBuilderIn.Close();
-			}
 
 			return pathBuilderIn.Detach();
 		}
