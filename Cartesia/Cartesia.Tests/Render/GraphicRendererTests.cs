@@ -215,7 +215,7 @@ public sealed class GraphicRendererTests
     }
 
     [Fact]
-    public void Render_WithoutSetEntities_DoesNotThrow_DocumentsEmptyLoop()
+    public void KnownIssue_RenderWithoutSetEntities_NeverTouchesNull()
     {
         // _entities is null! but _entityCount is 0, so neither loop body runs.
         using SKSurface surface = TestHelpers.CreateSurface();
@@ -228,7 +228,7 @@ public sealed class GraphicRendererTests
     }
 
     [Fact]
-    public void Render_EmptyEntities_NullMapperAndCanvas_DoNotThrow_DocumentsMasking()
+    public void KnownIssue_EmptyRender_MasksNullMapperAndCanvas()
     {
         // Zero-count loops never touch mapper/canvas: nulls are masked, not validated.
         var renderer = new GraphicRenderer();
@@ -258,7 +258,7 @@ public sealed class GraphicRendererTests
     }
 
     [Fact]
-    public void Render_MixedShapeAndLine_WithCallerTransform_ShapeWipesItForLaterEntities()
+    public void KnownIssue_ShapeDraw_WipesCallerTransformForLaterEntities()
     {
         // Caller translates, then shape.Draw calls ResetMatrix: the line draws UNSHIFTED.
         var rect = new GraphicRectangle(

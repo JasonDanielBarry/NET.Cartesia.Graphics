@@ -76,6 +76,26 @@ public sealed class GraphicEntityContractTests
     }
 
     [Fact]
+    public void KnownIssue_PrecomputeNullMapper_ThrowsNullReference()
+    {
+        var polyline = new GraphicPolyline(
+            [new Point(0, 0), new Point(1, 1)],
+            new Brush(SKColors.Transparent), new Pen(2, SKColors.Red, []));
+
+        Assert.Throws<NullReferenceException>(() => polyline.Precompute(null!));
+    }
+
+    [Fact]
+    public void KnownIssue_DrawNullCanvas_ThrowsNullReference()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+        var line = new GraphicLine(new Point(0, 0), new Point(1, 1), new Pen(2, SKColors.Red, []));
+        line.Precompute(mapper);
+
+        Assert.Throws<NullReferenceException>(() => line.Draw(null!));
+    }
+
+    [Fact]
     public void AllEntityTypes_PrecomputeThenDraw_DoNotThrow()
     {
         var mapper = TestHelpers.SquareMapper(400);

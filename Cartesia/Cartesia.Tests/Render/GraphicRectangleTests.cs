@@ -65,7 +65,7 @@ public sealed class GraphicRectangleTests
     }
 
     [Fact]
-    public void BoundingBox_Rotated45AboutCorner_DocumentsTwoCornerLimitation()
+    public void KnownIssue_BoundingBox_Rotated45_TwoCornerLimitation()
     {
         // Handle at box corner + 45deg: true 4-corner AABB would reach x in
         // [-2.83, 7.07], but the two-corner path pins [0, 4.24]. Flag to owner; do not "fix" here.
@@ -84,6 +84,21 @@ public sealed class GraphicRectangleTests
         TestHelpers.Near(10 * s + 4 * c, box.TopRight.Y, 1e-9);
         // True extremes (corner (0,4) -> x=-2.83) are NOT covered:
         Assert.True(box.BottomLeft.X > -2.83);
+    }
+
+    [Fact]
+    public void ShouldBe_BoundingBox_Rotated45_CoversAllCorners()
+    {
+        // RED: must be the true 4-corner AABB (x -2.83..7.07), not the two-corner 0..4.24.
+        var rect = new GraphicRectangle(
+            Props(w: 10, h: 4, rot: 45,
+                ha: HorizontalAlignment.Left, va: VerticalAlignment.Bottom, hx: 0, hy: 0),
+            new Brush(SKColors.Blue), Pen.None);
+
+        var box = rect.BoundingBox();
+
+        TestHelpers.Near(new Point(-2.82842712474619, 0), box.BottomLeft, 1e-9);
+        TestHelpers.Near(new Point(7.0710678118654755, 9.899494936611665), box.TopRight, 1e-9);
     }
 
     [Fact]
@@ -302,7 +317,7 @@ public sealed class GraphicRectangleTests
     }
 
     [Fact]
-    public void Draw_NegativeRadii_DoNotThrow_PaintCentre()
+    public void KnownIssue_NegativeRadii_Accepted()
     {
         var mapper = TestHelpers.SquareMapper(400);
         var rect = new GraphicRectangle(Props(rx: -5, ry: -5), new Brush(SKColors.Blue), Pen.None);

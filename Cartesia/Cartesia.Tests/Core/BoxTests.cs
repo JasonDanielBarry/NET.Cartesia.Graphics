@@ -261,7 +261,7 @@ public sealed class BoxTests
     }
 
     [Fact]
-    public void Transform_MapsOnlyTwoCorners_DocumentsBehavior()
+    public void KnownIssue_Transform_MapsOnlyTwoCorners()
     {
         // Box.Transform maps BottomLeft/TopRight only (no 4-corner rotation handling).
         // Rotation-aware consumers must use GraphicShape.BoundingBox() instead.
@@ -302,7 +302,7 @@ public sealed class BoxTests
     }
 
     [Fact]
-    public void Ctor_CoordinatesBeyondSentinel_ClampToSentinel_DocumentsLimit()
+    public void KnownIssue_CoordinatesBeyondSentinel_Clamp()
     {
         // Min/max seeds are +/-1e9, so the X minimum never registers (true min 2e9 pins at 1e9).
         // Pinned as actual; flag to owner.
@@ -313,15 +313,52 @@ public sealed class BoxTests
     }
 
     [Fact]
-    public void Ctor_NullList_ThrowsNullReferenceException()
+    public void KnownIssue_NullList_ThrowsNullReference()
     {
         Assert.Throws<NullReferenceException>(() => new Box(null!));
     }
 
     [Fact]
-    public void FromBoxes_NullList_ThrowsNullReferenceException()
+    public void KnownIssue_FromBoxesNull_ThrowsNullReference()
     {
         Assert.Throws<NullReferenceException>(() => Box.FromBoxes(null!));
+    }
+
+    [Fact]
+    public void ShouldBe_Transform_RotatesAllFourCorners()
+    {
+        // RED: a bounding box must contain the whole transformed shape. True 45deg AABB of
+        // (0,0)-(10,4) about the origin spans x -2.83..7.07, not the two-corner 0..4.24.
+        Box box = new([new Point(0, 0), new Point(10, 4)]);
+
+        Box result = box.Transform(AffineTransform.Identity().Rotate(45));
+
+        TestHelpers.Near(new Point(-2.82842712474619, 0), result.BottomLeft, 1e-9);
+        TestHelpers.Near(new Point(7.0710678118654755, 9.899494936611665), result.TopRight, 1e-9);
+    }
+
+    [Fact]
+    public void ShouldBe_CoordinatesBeyondSentinel_Work()
+    {
+        // RED: min/max must work for any finite coordinate, not just |v| <= 1e9.
+        Box box = new([new Point(2e9, 0), new Point(3e9, 1)]);
+
+        TestHelpers.Near(new Point(2e9, 0), box.BottomLeft);
+        TestHelpers.Near(new Point(3e9, 1), box.TopRight);
+    }
+
+    [Fact]
+    public void ShouldBe_NullList_ThrowsArgumentNull()
+    {
+        // RED: public API must throw ArgumentNullException, not NullReferenceException.
+        Assert.Throws<ArgumentNullException>(() => new Box(null!));
+    }
+
+    [Fact]
+    public void ShouldBe_FromBoxesNull_ThrowsArgumentNull()
+    {
+        // RED: public API must throw ArgumentNullException, not NullReferenceException.
+        Assert.Throws<ArgumentNullException>(() => Box.FromBoxes(null!));
     }
 
     [Fact]

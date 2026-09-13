@@ -30,3 +30,7 @@
 ## Testing mandate: test to death
 - Target: everything testable in `Core` + `Render` from `Cartesia.Tests` — math/round-trips (world<->canvas, incl. non-square canvases), all alignments/handles, rotations, validation throws, `IsVisible` gating, `Precompute`+`Draw` onto `SKSurface`/`SKBitmap` (no window needed).
 - Use tolerance asserts for doubles/floats; test empty/single-point/degenerate inputs where the code path allows.
+- Problem markers (preferred over docs — they nag every run via `devtools/Test.ps1`):
+  - `ShouldBe_*` = RED, asserts desired behavior; failing is expected until the implementation is fixed. Never "fix" by editing the test.
+  - `KnownIssue_*` = GREEN warning, pins actual buggy behavior. Flip to `ShouldBe_*` once fixed.
+- Implementation (`Core`, `Render`) is READONLY for agents. Report warranted bugs; the owner fixes.
