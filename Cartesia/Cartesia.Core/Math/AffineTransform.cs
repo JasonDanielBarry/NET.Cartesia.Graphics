@@ -1,8 +1,27 @@
-﻿namespace Cartesia.Core.Math
+﻿using static System.Math;
+
+namespace Cartesia.Core.Math
 {
-	internal sealed class AffineTransform
+	public sealed class AffineTransform
 	{
-		private AffineTransform(double m00In, double m01In, double m02In,
+		private static AffineTransform Multiply(AffineTransform leftIn, AffineTransform rightIn)
+		{
+			return new AffineTransform(
+				(leftIn.M00 * rightIn.M00) + (leftIn.M01 * rightIn.M10),
+				(leftIn.M00 * rightIn.M01) + (leftIn.M01 * rightIn.M11),
+				(leftIn.M00 * rightIn.M02) + (leftIn.M01 * rightIn.M12) + leftIn.M02,
+
+				(leftIn.M10 * rightIn.M00) + (leftIn.M11 * rightIn.M10),
+				(leftIn.M10 * rightIn.M01) + (leftIn.M11 * rightIn.M11),
+				(leftIn.M10 * rightIn.M02) + (leftIn.M11 * rightIn.M12) + leftIn.M12
+			);
+		}
+
+		internal readonly double
+			M00, M01, M02,
+			M10, M11, M12;
+
+		internal AffineTransform(double m00In, double m01In, double m02In,
 								double m10In, double m11In, double m12In)
 		{
 			M00 = m00In;
@@ -13,30 +32,42 @@
 			M12 = m12In;
 		}
 
-		internal readonly double
-			M00, M01, M02,
-			M10, M11, M12;
-
-		internal static AffineTransform Create(double m00In, double m01In, double m02In,
-												double m10In, double m11In, double m12In)
+		public static AffineTransform Identity()
 		{
 			return new AffineTransform(
-				m00In, m01In, m02In,
-				m10In, m11In, m12In
+				1, 0, 0,
+				0, 1, 0
 			);
 		}
 
-		internal static AffineTransform Create(double[] transformMatrixValuesIn)
+		public AffineTransform Scale(double scaleXIn, double scaleYIn)
 		{
-			if (transformMatrixValuesIn.Length != 6)
-			{
-				throw new ArgumentException("The transform matrix values array must contain exactly 6 elements.");
-			}
-
-			return new AffineTransform(
-				transformMatrixValuesIn[0], transformMatrixValuesIn[1], transformMatrixValuesIn[2],
-				transformMatrixValuesIn[3], transformMatrixValuesIn[4], transformMatrixValuesIn[5]
+			AffineTransform scaleTransform = new AffineTransform(
+				scaleXIn, 0, 0,
+				0, scaleYIn, 0
 			);
+
+			return Multiply(scaleTransform, this);
+		}
+
+		public AffineTransform Rotate(double angleIn)
+		{
+			AffineTransform rotationTransform = new AffineTransform(
+				Cos(angleIn), -Sin(angleIn), 0,
+				Sin(angleIn), Cos(angleIn), 0
+			);
+
+			return Multiply(rotationTransform, this);
+		}
+
+		public AffineTransform Translate(double dXIn, double dYIn)
+		{
+			AffineTransform translationTransform = new AffineTransform(
+				1, 0, dXIn,
+				0, 1, dYIn
+			);
+
+			return Multiply(translationTransform, this);
 		}
 	}
 }

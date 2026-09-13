@@ -11,7 +11,7 @@ namespace Cartesia.Core.Mapping
 
 		private static AffineTransform BuildCanvasToWorldTransform(int canvasWidthIn, int canvasHeightIn, Box worldViewPortIn)
 		{
-			return AffineTransform.Create(
+			return new AffineTransform(
 				worldViewPortIn.Width / canvasWidthIn, 0, worldViewPortIn.BottomLeft.X,
 				0, -worldViewPortIn.Height / canvasHeightIn, worldViewPortIn.TopRight.Y
 			);
@@ -23,7 +23,7 @@ namespace Cartesia.Core.Mapping
 				widthRatio = canvasWidthIn / worldViewPortIn.Width,
 				heightRatio = canvasHeightIn / worldViewPortIn.Height;
 
-			return AffineTransform.Create(
+			return new AffineTransform(
 				widthRatio, 0, -widthRatio * worldViewPortIn.BottomLeft.X,
 				0, -heightRatio, heightRatio * worldViewPortIn.TopRight.Y
 			);
