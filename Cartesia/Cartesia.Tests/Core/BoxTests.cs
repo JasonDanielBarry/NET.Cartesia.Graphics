@@ -300,4 +300,75 @@ public sealed class BoxTests
         TestHelpers.Near(0, result.Width);
         TestHelpers.Near(0, result.Height);
     }
+
+    [Fact]
+    public void Ctor_CoordinatesBeyondSentinel_ClampToSentinel_DocumentsLimit()
+    {
+        // Min/max seeds are +/-1e9, so the X minimum never registers (true min 2e9 pins at 1e9).
+        // Pinned as actual; flag to owner.
+        Box box = new([new Point(2e9, 0), new Point(3e9, 1)]);
+
+        TestHelpers.Near(new Point(1e9, 0), box.BottomLeft);
+        TestHelpers.Near(new Point(3e9, 1), box.TopRight);
+    }
+
+    [Fact]
+    public void Ctor_NullList_ThrowsNullReferenceException()
+    {
+        Assert.Throws<NullReferenceException>(() => new Box(null!));
+    }
+
+    [Fact]
+    public void FromBoxes_NullList_ThrowsNullReferenceException()
+    {
+        Assert.Throws<NullReferenceException>(() => Box.FromBoxes(null!));
+    }
+
+    [Fact]
+    public void FromDimensionsAndHandle_NegativeDimensions_NormalizeToAbsolute()
+    {
+        // (0,-10) re-normalizes: width becomes +10, handle flips to the right edge.
+        Box box = Box.FromDimensionsAndHandle(-10, -6,
+            HorizontalAlignment.Left, VerticalAlignment.Bottom, new Point(0, 0));
+
+        TestHelpers.Near(new Point(-10, -6), box.BottomLeft);
+        TestHelpers.Near(new Point(0, 0), box.TopRight);
+        TestHelpers.Near(10, box.Width);
+        TestHelpers.Near(6, box.Height);
+    }
+
+    [Fact]
+    public void Transform_Rotate180_NegatesBothCorners()
+    {
+        Box box = new([new Point(1, 2), new Point(5, 9)]);
+
+        Box result = box.Transform(AffineTransform.Identity().Rotate(180));
+
+        TestHelpers.Near(new Point(-5, -9), result.BottomLeft, 1e-9);
+        TestHelpers.Near(new Point(-1, -2), result.TopRight, 1e-9);
+    }
+
+    [Fact]
+    public void Transform_Shear_MapsBothCorners()
+    {
+        // (x,y) -> (x+y, y): BL(0,0)->(0,0); TR(2,4)->(6,4).
+        Box box = new([new Point(0, 0), new Point(2, 4)]);
+
+        Box result = box.Transform(new AffineTransform(1, 1, 0, 0, 1, 0));
+
+        TestHelpers.Near(new Point(0, 0), result.BottomLeft);
+        TestHelpers.Near(new Point(6, 4), result.TopRight);
+    }
+
+    [Fact]
+    public void Transform_ComposedTranslateRotate_MapsBothCorners()
+    {
+        // (1,0) -> translate(1,0) -> (2,0) -> rotate90 -> (0,2); origin -> (1,0) -> (0,1).
+        Box box = new([new Point(0, 0), new Point(1, 0)]);
+
+        Box result = box.Transform(AffineTransform.Identity().Translate(1, 0).Rotate(90));
+
+        TestHelpers.Near(new Point(0, 1), result.BottomLeft, 1e-9);
+        TestHelpers.Near(new Point(0, 2), result.TopRight, 1e-9);
+    }
 }

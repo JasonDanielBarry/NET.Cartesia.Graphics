@@ -86,4 +86,42 @@ public sealed class ShapePropertiesTests
         Assert.Equal(original.Width, copy.Width);
         Assert.Equal(original.HandlePoint.X, copy.HandlePoint.X);
     }
+
+    [Fact]
+    public void RectangleProperties_Negatives_StoredVerbatimWithoutValidation()
+    {
+        var props = new RectangleProperties(
+            -10, -5, -3, -4, 0,
+            HorizontalAlignment.Centre, VerticalAlignment.Centre, new Point(0, 0));
+
+        Assert.Equal(-10, props.Width);
+        Assert.Equal(-5, props.Height);
+        Assert.Equal(-3, props.CornerRadiusX);
+        Assert.Equal(-4, props.CornerRadiusY);
+    }
+
+    [Fact]
+    public void EllipseProperties_Negatives_StoredVerbatimWithoutValidation()
+    {
+        var props = new EllipseProperties(
+            -20, 0, -30,
+            HorizontalAlignment.Left, VerticalAlignment.Top, new Point(1, 1));
+
+        Assert.Equal(-20, props.Width);
+        Assert.Equal(0, props.Height);
+        Assert.Equal(-30, props.Rotation);
+    }
+
+    [Fact]
+    public void ArcProperties_InvertedAndZeroSpans_StoredVerbatim()
+    {
+        var inverted = new ArcProperties(50, 50, 90, -90, 0, new Point(0, 0));
+
+        Assert.Equal(90, inverted.StartAngle);
+        Assert.Equal(-90, inverted.EndAngle);
+
+        var zero = new ArcProperties(50, 50, 45, 45, 0, new Point(0, 0));
+
+        Assert.Equal(zero.StartAngle, zero.EndAngle);
+    }
 }

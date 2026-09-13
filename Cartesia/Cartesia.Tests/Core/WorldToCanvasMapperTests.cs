@@ -248,4 +248,107 @@ public sealed class WorldToCanvasMapperTests
         TestHelpers.Near(new Point(10, 0), mapper.MapWorldToCanvas(new Point(1000, 1000)));
         TestHelpers.Near(0.1, mapper.WorldDXToCanvasDL(10));
     }
+
+    [Fact]
+    public void MapWorldToCanvas_AbsoluteValues_NonSquareCanvas()
+    {
+        // widthRatio=4, heightRatio=4: (100,50) -> (400, -4*50+4*100=200).
+        var mapper = TestHelpers.MapperFor(800, 400, 200, 100);
+
+        TestHelpers.Near(new Point(400, 200), mapper.MapWorldToCanvas(new Point(100, 50)));
+        TestHelpers.Near(new Point(0, 400), mapper.MapWorldToCanvas(new Point(0, 0)));
+        TestHelpers.Near(new Point(800, 0), mapper.MapWorldToCanvas(new Point(200, 100)));
+    }
+
+    [Fact]
+    public void MapCanvasToWorld_AbsoluteValues_NonSquareOffsetViewport()
+    {
+        // wx = cx*200/800+1000; wy = 2100-cy*100/400.
+        var mapper = TestHelpers.MapperFor(800, 400, 200, 100, 1000, 2000);
+
+        TestHelpers.Near(new Point(1000, 2100), mapper.MapCanvasToWorld(new Point(0, 0)));
+        TestHelpers.Near(new Point(1200, 2000), mapper.MapCanvasToWorld(new Point(800, 400)));
+        TestHelpers.Near(new Point(1050, 2050), mapper.MapCanvasToWorld(new Point(200, 200)));
+    }
+
+    [Fact]
+    public void MapCanvasToWorld_Array_OffsetViewport_AbsoluteValues()
+    {
+        var mapper = TestHelpers.MapperFor(100, 100, 100, 100, 1000, 2000);
+
+        Point[] output = mapper.MapCanvasToWorld([new Point(0, 100), new Point(100, 0)]);
+
+        TestHelpers.Near(new Point(1000, 2000), output[0]);
+        TestHelpers.Near(new Point(1100, 2100), output[1]);
+    }
+
+    [Fact]
+    public void MapCanvasToWorld_Array_DoesNotMutateInput()
+    {
+        var mapper = TestHelpers.MapperFor(100, 100, 100, 100, 1000, 2000);
+        Point[] input = [new Point(0, 100)];
+
+        _ = mapper.MapCanvasToWorld(input);
+
+        TestHelpers.Near(new Point(0, 100), input[0]);
+    }
+
+    [Fact]
+    public void MapSingle_EqualsMapArray_FirstElement_NonSquare()
+    {
+        var mapper = TestHelpers.MapperFor(800, 400, 200, 100, 1000, 2000);
+        Point p = new(1042.5, 2033.25);
+
+        TestHelpers.Near(mapper.MapWorldToCanvas(p), mapper.MapWorldToCanvas([p])[0]);
+        TestHelpers.Near(mapper.MapCanvasToWorld(p), mapper.MapCanvasToWorld([p])[0]);
+    }
+
+    [Fact]
+    public void MapWorldToCanvas_NullArray_ThrowsNullReferenceException()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+
+        Assert.Throws<NullReferenceException>(() => mapper.MapWorldToCanvas(null!));
+    }
+
+    [Fact]
+    public void MapCanvasToWorld_NullArray_ThrowsNullReferenceException()
+    {
+        var mapper = TestHelpers.SquareMapper(400);
+
+        Assert.Throws<NullReferenceException>(() => mapper.MapCanvasToWorld(null!));
+    }
+
+    [Fact]
+    public void ScalarMagnitudes_NegativeAndZeroDeltas()
+    {
+        var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
+
+        TestHelpers.Near(80, mapper.WorldDYToCanvasDT(-10));
+        TestHelpers.Near(25, mapper.CanvasDTToWorldDY(-100));
+        TestHelpers.Near(0, mapper.CanvasDTToWorldDY(0));
+        TestHelpers.Near(0, mapper.WorldDXToCanvasDL(0));
+        TestHelpers.Near(-2, mapper.CanvasDLToWorldDX(-8));
+    }
+
+    [Fact]
+    public void ZeroWorldWidth_MapsXToNaN_DocumentsDegenerate()
+    {
+        // widthRatio = 800/0 = +Inf; M02 = -Inf*BL.x = NaN when BL.x == 0. No throw; flag to owner.
+        var mapper = TestHelpers.MapperFor(400, 400, 0, 100);
+
+        Point mapped = mapper.MapWorldToCanvas(new Point(0, 50));
+
+        Assert.True(double.IsNaN(mapped.X) || double.IsInfinity(mapped.X));
+        Assert.True(double.IsNaN(mapper.WorldDXToCanvasDL(0)));
+    }
+
+    [Fact]
+    public void ZeroCanvasWidth_CollapsesX_DocumentsDegenerate()
+    {
+        var mapper = TestHelpers.MapperFor(0, 400, 200, 100);
+
+        TestHelpers.Near(new Point(0, 0), mapper.MapWorldToCanvas(new Point(100, 100)));
+        TestHelpers.Near(0, mapper.WorldDXToCanvasDL(10));
+    }
 }

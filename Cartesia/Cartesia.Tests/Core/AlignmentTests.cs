@@ -104,6 +104,22 @@ public sealed class AlignmentTests
     }
 
     [Fact]
+    public void InvalidAlignments_ViaBox_PreserveParamNameAndMessage()
+    {
+        ArgumentException hEx = Assert.Throws<ArgumentException>(() =>
+            Box.FromDimensionsAndHandle(10, 6, (HorizontalAlignment)999, VerticalAlignment.Bottom, new Point(0, 0)));
+
+        Assert.Equal("horizontalAlignmentIn", hEx.ParamName);
+        Assert.Contains("Invalid horizontal alignment", hEx.Message);
+
+        ArgumentException vEx = Assert.Throws<ArgumentException>(() =>
+            Box.FromDimensionsAndHandle(10, 6, HorizontalAlignment.Left, (VerticalAlignment)999, new Point(0, 0)));
+
+        Assert.Equal("verticalAlignmentIn", vEx.ParamName);
+        Assert.Contains("Invalid vertical alignment", vEx.Message);
+    }
+
+    [Fact]
     public void HorizontalAndVerticalBounds_Direct_AllNineCombos()
     {
         (HorizontalAlignment h, VerticalAlignment v, double l, double r, double b, double t)[] cases =

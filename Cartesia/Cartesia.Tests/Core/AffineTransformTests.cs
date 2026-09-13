@@ -218,4 +218,92 @@ public sealed class AffineTransformTests
 
         TestHelpers.Near(new Point(0, 1), Apply(t, 1, 0), 1e-9);
     }
+
+    [Fact]
+    public void Chaining_DoesNotMutateReceiver_Translate()
+    {
+        AffineTransform b = AffineTransform.Identity();
+        AffineTransform t = b.Translate(10, 0);
+
+        Assert.Equal(0, b.M02);
+        Assert.Equal(10, t.M02);
+    }
+
+    [Fact]
+    public void Chaining_DoesNotMutateReceiver_ScaleAndRotate()
+    {
+        AffineTransform b = AffineTransform.Identity().Translate(1, 2);
+        AffineTransform s = b.Scale(2, 3);
+        AffineTransform r = b.Rotate(90);
+
+        Assert.Equal(1, b.M00);
+        Assert.Equal(1, b.M02);
+        Assert.Equal(2, s.M00);
+        Assert.Equal(-1, r.M01, 9);
+    }
+
+    [Fact]
+    public void Chaining_ExposesComposedMatrix()
+    {
+        // Translate(10,0) then Scale(2,2): M = S*T -> M00=2, M02=20.
+        AffineTransform t = AffineTransform.Identity().Translate(10, 0).Scale(2, 2);
+
+        Assert.Equal(2, t.M00);
+        Assert.Equal(0, t.M01);
+        Assert.Equal(20, t.M02);
+        Assert.Equal(0, t.M10);
+        Assert.Equal(2, t.M11);
+        Assert.Equal(0, t.M12);
+    }
+
+    [Fact]
+    public void Rotate90_MatrixComponents()
+    {
+        AffineTransform t = AffineTransform.Identity().Rotate(90);
+
+        Assert.Equal(0, t.M00, 9);
+        Assert.Equal(-1, t.M01, 9);
+        Assert.Equal(0, t.M02, 9);
+        Assert.Equal(1, t.M10, 9);
+        Assert.Equal(0, t.M11, 9);
+        Assert.Equal(0, t.M12, 9);
+    }
+
+    [Fact]
+    public void Rotate_FractionalAngle_22Point5()
+    {
+        AffineTransform t = AffineTransform.Identity().Rotate(22.5);
+
+        double rad = 22.5 * Math.PI / 180;
+        TestHelpers.Near(new Point(Math.Cos(rad), Math.Sin(rad)), Apply(t, 1, 0), 1e-9);
+    }
+
+    [Fact]
+    public void Rotate_720_IsIdentity()
+    {
+        TestHelpers.Near(new Point(3, -4), Apply(AffineTransform.Identity().Rotate(720), 3, -4), 1e-9);
+    }
+
+    [Fact]
+    public void Rotate_450_EqualsRotate90()
+    {
+        Point a = Apply(AffineTransform.Identity().Rotate(450), 2, 5);
+        Point b = Apply(AffineTransform.Identity().Rotate(90), 2, 5);
+
+        TestHelpers.Near(b, a, 1e-9);
+    }
+
+    [Fact]
+    public void Rotate_NaN_PropagatesNaN_DocumentsBehavior()
+    {
+        Point r = Apply(AffineTransform.Identity().Rotate(double.NaN), 1, 2);
+
+        Assert.True(double.IsNaN(r.X) && double.IsNaN(r.Y));
+    }
+
+    [Fact]
+    public void Scale_ZeroBoth_CollapsesToOrigin()
+    {
+        TestHelpers.Near(new Point(0, 0), Apply(AffineTransform.Identity().Scale(0, 0), 5, 7));
+    }
 }
