@@ -16,8 +16,6 @@ namespace Cartesia.Render.Rendering
 			};
 		}
 
-		public SKColor Colour => colourIn;
-
 		public static Brush None => new Brush(SKColors.Transparent);
 	}
 }

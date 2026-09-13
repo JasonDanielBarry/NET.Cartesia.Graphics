@@ -73,9 +73,6 @@ namespace Cartesia.Render.Rendering
 			};
 		}
 
-		public double Thickness => _thickness;
-		public SKColor Colour => _colour;
-		public IReadOnlyList<double> DashPattern => _dashPattern;
 		public static Pen None => new Pen();
 
 		public Pen(double thicknessIn, SKColor colourIn, IReadOnlyList<double> dashPatternIn)

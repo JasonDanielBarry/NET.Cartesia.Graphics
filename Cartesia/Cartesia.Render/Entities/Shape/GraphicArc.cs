@@ -1,16 +1,15 @@
-﻿using Cartesia.Core.Geometry;
-using Cartesia.Core.Shapes;
+﻿using Cartesia.Core.Shapes;
 using Cartesia.Render.Rendering;
 using SkiaSharp;
 
 namespace Cartesia.Render.Entities.Shape
 {
-	public sealed class GraphicArc(ArcProperties arcPropertiesIn, Point handlePointIn, Pen strokeIn)
+	public sealed class GraphicArc(ArcProperties arcPropertiesIn, Pen strokeIn)
 		: GraphicShape(
 			2 * arcPropertiesIn.RadiusX, 2 * arcPropertiesIn.RadiusY,
 			arcPropertiesIn.Rotation,
 			HorizontalAlignment.Centre, VerticalAlignment.Centre,
-			handlePointIn,
+			arcPropertiesIn.HandlePoint,
 			Brush.None, strokeIn
 		)
 	{

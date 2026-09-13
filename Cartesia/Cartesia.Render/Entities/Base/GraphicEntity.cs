@@ -22,7 +22,7 @@ namespace Cartesia.Render.Entities.Base
 			_strokePaint = strokeIn.ToSKPaint();
 		}
 
-		protected readonly SKPaint
+		private protected readonly SKPaint
 			_fillPaint,
 			_strokePaint;
 

@@ -14,18 +14,16 @@ namespace Cartesia.WinUI.Test
 		private static IReadOnlyList<GraphicEntity> ArcEntities()
 		{
 			ArcProperties
-				arcProp1 = new ArcProperties(150, 100, -90, 90, 0),
-				arcProp2 = new ArcProperties(125, 75, -90, 90, -90);
+				arcProp1 = new ArcProperties(150, 100, -90, 90, 0, new Point(400, 600)),
+				arcProp2 = new ArcProperties(125, 75, -90, 90, -90, new Point(400, 600));
 
 			GraphicArc
 				graphicArc1 = new GraphicArc(
 					arcProp1,
-					new Point(400, 600),
 					new Pen(3, SKColors.Red, [])
 				),
 				graphicArc2 = new GraphicArc(
 					arcProp2,
-					new Point(400, 600),
 					new Pen(3, SKColors.Blue, [])
 				);
 
@@ -42,6 +40,65 @@ namespace Cartesia.WinUI.Test
 				);
 
 			return [line1, line2, graphicArc1, graphicArc2];
+		}
+
+		private static IReadOnlyList<GraphicEntity> EllipseEntities()
+		{
+			Point handlePoint = new Point(600, 500);
+
+			EllipseProperties
+				ellipseProp1 = new EllipseProperties(
+					150, 75,
+					15,
+					HorizontalAlignment.Left,
+					VerticalAlignment.Centre,
+					handlePoint
+				),
+				ellipseProp2 = new EllipseProperties(
+					150, 75,
+					15,
+					HorizontalAlignment.Right,
+					VerticalAlignment.Centre,
+					handlePoint
+				),
+				ellipseProp3 = new EllipseProperties(
+					75, 150,
+					15,
+					HorizontalAlignment.Centre,
+					VerticalAlignment.Top,
+					handlePoint
+				),
+				ellipseProp4 = new EllipseProperties(
+					75, 150,
+					15,
+					HorizontalAlignment.Centre,
+					VerticalAlignment.Bottom,
+					handlePoint
+				);
+
+			GraphicEllipse
+				graphicEllipse1 = new GraphicEllipse(
+					ellipseProp1,
+					new Brush(SKColors.Green),
+					new Pen(5, SKColors.LightGray, [5, 5])
+				),
+				graphicEllipse2 = new GraphicEllipse(
+					ellipseProp2,
+					new Brush(SKColors.Green),
+					new Pen(5, SKColors.LightGray, [5, 5])
+				),
+				graphicEllipse3 = new GraphicEllipse(
+					ellipseProp3,
+					new Brush(SKColors.Green),
+					new Pen(5, SKColors.LightGray, [5, 5])
+				),
+				graphicEllipse4 = new GraphicEllipse(
+					ellipseProp4,
+					new Brush(SKColors.Green),
+					new Pen(5, SKColors.LightGray, [5, 5])
+				);
+
+			return [graphicEllipse1, graphicEllipse2, graphicEllipse3, graphicEllipse4];
 		}
 
 		private static IReadOnlyList<GraphicEntity> LineEntities()
@@ -116,6 +173,10 @@ namespace Cartesia.WinUI.Test
 
 			entities.AddRange(
 				ArcEntities()
+			);
+
+			entities.AddRange(
+				EllipseEntities()
 			);
 
 			entities.AddRange(
