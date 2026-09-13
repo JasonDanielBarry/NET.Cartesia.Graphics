@@ -8,8 +8,8 @@
 ## Build / test (SDK 10, `net10.0`)
 - Solution is `Cartesia/Cartesia.slnx` (not `.sln`).
 - `dotnet build Cartesia/Cartesia.slnx`
-- `dotnet test Cartesia/Cartesia.Tests/Cartesia.Tests.csproj`
-- Single test: `dotnet test Cartesia/Cartesia.Tests/Cartesia.Tests.csproj --filter "FullyQualifiedName~<Name>"`
+- `dotnet test --project Cartesia/Cartesia.Tests/Cartesia.Tests.csproj` (MTP mode via root `global.json`; old `dotnet test <csproj>` VSTest syntax fails on .NET 10 SDK)
+- Single test: `dotnet test --project Cartesia/Cartesia.Tests/Cartesia.Tests.csproj -- --filter "FullyQualifiedName~<Name>"`
 - `Cartesia.WinUI.Test` is a Windows-only WinUI3 manual visual harness (`net10.0-windows10.0.19041`, x86/x64/ARM64, WindowsAppSDK). Never reference it from unit tests; never use it for verification.
 - Stack: xunit.v3 `4.0.0` + `xunit.runner.visualstudio` + `Microsoft.NET.Test.Sdk`, `ImplicitUsings` + `Nullable enable`. SkiaSharp `4.152.0` only in `Render`.
 
