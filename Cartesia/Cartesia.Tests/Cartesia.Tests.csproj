@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cartesia.Core\Cartesia.Core.csproj" />
+    <ProjectReference Include="..\Cartesia.Render\Cartesia.Render.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
