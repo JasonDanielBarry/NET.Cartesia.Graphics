@@ -1,6 +1,8 @@
+using Cartesia.Core.Curve;
 using Cartesia.Core.Geometry;
 using Cartesia.Core.Shapes;
 using Cartesia.Render.Entities.Base;
+using Cartesia.Render.Entities.Curve;
 using Cartesia.Render.Entities.Geometry;
 using Cartesia.Render.Entities.Shape;
 using Cartesia.Render.Renderer;
@@ -162,6 +164,12 @@ public sealed class GraphicRendererTests
             new GraphicPolyline([new Point(50, 200), new Point(200, 350), new Point(300, 250)], new Brush(SKColors.Transparent), new Pen(3, SKColors.Green, [])),
             new GraphicPolygon([new Point(50, 300), new Point(200, 450), new Point(300, 350)], new Brush(SKColors.Yellow), new Pen(3, SKColors.Purple, [])),
             new GraphicRectangle(new RectangleProperties(150, 75, 15, 15, 30, HorizontalAlignment.Left, VerticalAlignment.Centre, new Point(600, 200)), new Brush(SKColors.Blue), new Pen(5, SKColors.OrangeRed, [])),
+            // Bezier last: apex world (200,250) -> canvas (200,550) overpaints the
+            // line endpoint there (red 5px over blue 3px); all other spot pixels
+            // sit outside the bezier canvas footprint (x 100..300, y 100..300).
+            new GraphicBezierCurve(new BezierCurveProperties(
+                new Point(100, 100), new Point(100, 300),
+                new Point(300, 300), new Point(300, 100)), new Pen(3, SKColors.Red, [])),
         ];
 
         using SKSurface surface = TestHelpers.CreateSurface(800, 800);
@@ -192,6 +200,8 @@ public sealed class GraphicRendererTests
         TestHelpers.AssertGreenISH(bitmap.GetPixel(672, 281));
         // Arc right half: world box (250,500)-(550,700) -> canvas x 250..550, y 100..300; rim (550,200) red.
         TestHelpers.AssertRed(bitmap.GetPixel(550, 200));
+        // Bezier apex world (200,250) -> canvas (200,550): red.
+        TestHelpers.AssertRed(bitmap.GetPixel(200, 550));
     }
 
     [Fact]

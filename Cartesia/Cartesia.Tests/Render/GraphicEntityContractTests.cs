@@ -1,5 +1,7 @@
+using Cartesia.Core.Curve;
 using Cartesia.Core.Geometry;
 using Cartesia.Core.Shapes;
+using Cartesia.Render.Entities.Curve;
 using Cartesia.Render.Entities.Geometry;
 using Cartesia.Render.Entities.Shape;
 using Cartesia.Render.Rendering;
@@ -101,6 +103,11 @@ public sealed class GraphicEntityContractTests
         var mapper = TestHelpers.SquareMapper(400);
         Cartesia.Render.Entities.Base.GraphicEntity[] entities =
         [
+            // Bezier first: its P0 butt pixel (100,300) sits inside the ellipse
+            // fill below, which overpaints it; its apex (200,150) stays clear.
+            new GraphicBezierCurve(new BezierCurveProperties(
+                new Point(100, 100), new Point(100, 300),
+                new Point(300, 300), new Point(300, 100)), new Pen(2, SKColors.Red, [])),
             new GraphicLine(new Point(0, 0), new Point(10, 10), new Pen(2, SKColors.Red, [])),
             new GraphicPolyline([new Point(0, 0), new Point(10, 10)], new Brush(SKColors.Transparent), new Pen(2, SKColors.Red, [])),
             new GraphicPolygon([new Point(0, 0), new Point(10, 0), new Point(5, 8)], new Brush(SKColors.Yellow), new Pen(2, SKColors.Red, [])),
@@ -128,5 +135,7 @@ public sealed class GraphicEntityContractTests
         TestHelpers.AssertBlue(TestHelpers.Sample(surface, 200, 200));
         TestHelpers.AssertBlue(TestHelpers.Sample(surface, 100, 300));
         TestHelpers.AssertRed(TestHelpers.Sample(surface, 330, 100));
+        // Bezier apex world (200,250) -> canvas (200,150) painted.
+        TestHelpers.AssertRed(TestHelpers.Sample(surface, 200, 150));
     }
 }
