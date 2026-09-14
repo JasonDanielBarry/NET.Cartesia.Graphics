@@ -1,6 +1,8 @@
-﻿using Cartesia.Core.Geometry;
+﻿using Cartesia.Core.Curve;
+using Cartesia.Core.Geometry;
 using Cartesia.Core.Shapes;
 using Cartesia.Render.Entities.Base;
+using Cartesia.Render.Entities.Curve;
 using Cartesia.Render.Entities.Geometry;
 using Cartesia.Render.Entities.Shape;
 using Cartesia.Render.Rendering;
@@ -40,6 +42,35 @@ namespace Cartesia.WinUI.Test
 				);
 
 			return [line1, line2, graphicArc1, graphicArc2];
+		}
+
+		private static IReadOnlyList<GraphicEntity> BezierCurveEntities()
+		{
+			BezierCurveProperties
+				bezier1 = new BezierCurveProperties(
+					new Point(100, 600),
+					new Point(150, 750),
+					new Point(200, 500),
+					new Point(250, 850)
+				),
+				bezier2 = new BezierCurveProperties(
+					new Point(300, 700),
+					new Point(200, 850),
+					new Point(500, 850),
+					new Point(400, 700)
+				);
+
+			GraphicBezierCurve
+				graphBez1 = new GraphicBezierCurve(
+					bezier1,
+					new Pen(3, SKColors.ForestGreen, [])
+				),
+				graphBez2 = new GraphicBezierCurve(
+					bezier2,
+					new Pen(3, SKColors.Blue, [])
+				);
+
+			return [graphBez1, graphBez2];
 		}
 
 		private static IReadOnlyList<GraphicEntity> EllipseEntities()
@@ -236,6 +267,10 @@ namespace Cartesia.WinUI.Test
 
 			entities.AddRange(
 				ArcEntities()
+			);
+
+			entities.AddRange(
+				BezierCurveEntities()
 			);
 
 			entities.AddRange(
