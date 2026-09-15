@@ -17,6 +17,13 @@ namespace Cartesia.Render.Entities.Shape
 	{
 		private readonly SKRoundRect _roundRect = new SKRoundRect();
 
+		private protected override void DisposeResources()
+		{
+			base.DisposeResources();
+
+			_roundRect.Dispose();
+		}
+
 		private protected override void DrawShape(SKCanvas canvasIn)
 		{
 			if (_fillBrush.IsVisible)

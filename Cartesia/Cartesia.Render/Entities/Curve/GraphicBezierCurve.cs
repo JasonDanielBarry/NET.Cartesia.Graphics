@@ -15,6 +15,13 @@ namespace Cartesia.Render.Entities.Curve
 		private SKPath _curvePath = null!;
 		private readonly SKPathBuilder _pathBuilder = new SKPathBuilder();
 
+		private protected override void DisposeResources()
+		{
+			base.DisposeResources();
+
+			_pathBuilder.Dispose();
+		}
+
 		internal override Box BoundingBox()
 		{
 			return new Box([
@@ -28,6 +35,8 @@ namespace Cartesia.Render.Entities.Curve
 		internal override void Draw(SKCanvas canvasIn)
 		{
 			canvasIn.DrawPath(_curvePath, _strokePaint);
+
+			_curvePath.Dispose();
 		}
 
 		internal override void Precompute(WorldToCanvasMapper mapperIn)
