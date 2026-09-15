@@ -41,7 +41,7 @@ namespace Cartesia.Core.Mapping
 
 		public double WorldDYToCanvasDT(double dYIn)
 		{
-			return -dYIn * canvasWidthIn / worldViewPortIn.Height;
+			return -dYIn * canvasHeightIn / worldViewPortIn.Height;
 		}
 
 		public double CanvasDTToWorldDY(double dTIn)
