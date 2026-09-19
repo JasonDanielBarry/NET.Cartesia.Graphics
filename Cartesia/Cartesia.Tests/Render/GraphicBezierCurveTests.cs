@@ -1186,8 +1186,13 @@ public sealed class GraphicBezierCurveTests
     }
 
     [Fact]
-    public void Draw_TwiceWithoutRePrecompute_PaintsIdentically()
+    public void ShouldBe_Draw_TwiceWithoutRePrecompute_PaintsIdentically()
     {
+        // DEFUSED (was Draw_TwiceWithoutRePrecompute_PaintsIdentically): second Draw
+        // with the disposed SKPath AVs native (0xC0000005 at sk_canvas_draw_path)
+        // instead of throwing managed. Prove single-use via handle so the suite
+        // stays red/green instead of crashing the host.
+        // See GraphicDisposalTests for the ShouldBe/KnownIssue pair.
         var mapper = TestHelpers.SquareMapper(400);
         var curve = new GraphicBezierCurve(Arch(), Red());
 
@@ -1195,11 +1200,10 @@ public sealed class GraphicBezierCurveTests
         curve.Precompute(mapper);
         curve.Draw(first.Canvas);
 
-        using SKSurface second = TestHelpers.CreateSurface();
-        curve.Draw(second.Canvas);
-
-        Assert.False(TestHelpers.SurfacesDiffer(first, second));
-        TestHelpers.AssertRed(TestHelpers.Sample(second, 200, 150));
+        var path = (SKPath)typeof(GraphicBezierCurve)
+            .GetField("_curvePath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .GetValue(curve)!;
+        Assert.NotEqual(IntPtr.Zero, path.Handle);
     }
 
     [Fact]
@@ -1411,11 +1415,10 @@ public sealed class GraphicBezierCurveTests
     }
 
     [Fact]
-    public void ShouldBe_GraphicEntity_IsDisposable()
+    public void GraphicEntity_ImplementsIDisposable()
     {
-        // RED: every Precompute Detach()s a native SKPath and the ctor creates
-        // two SKPaints, yet no entity implements IDisposable — re-rendering
-        // leaks native handles unboundedly. Pin the design demand here.
+        // Fixed: GraphicEntity now implements IDisposable. Kept to prove the
+        // design demand; see GraphicDisposalTests for exhaustive cover.
         Assert.Contains(typeof(IDisposable), typeof(GraphicEntity).GetInterfaces());
     }
 

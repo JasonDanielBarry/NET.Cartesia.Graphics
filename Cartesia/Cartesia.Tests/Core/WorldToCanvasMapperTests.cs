@@ -182,13 +182,12 @@ public sealed class WorldToCanvasMapperTests
     }
 
     [Fact]
-    public void KnownIssue_WorldDYToCanvasDT_UsesCanvasWidthNumerator()
+    public void WorldDYToCanvasDT_UsesCanvasHeightNumerator()
     {
-        // Implementation: -dY * canvasWidthIn / worldHeight. The width numerator
-        // is pinned here as actual behavior; flag to owner before changing.
+        // Fixed: implementation now scales with canvas HEIGHT (mirrors CanvasDTToWorldDY).
         var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
 
-        TestHelpers.Near(-10 * 800 / 100, mapper.WorldDYToCanvasDT(10));
+        TestHelpers.Near(-10 * 400 / 100, mapper.WorldDYToCanvasDT(10));
         TestHelpers.Near(0, mapper.WorldDYToCanvasDT(0));
     }
 
@@ -201,16 +200,14 @@ public sealed class WorldToCanvasMapperTests
     }
 
     [Fact]
-    public void KnownIssue_ScalarDY_RoundTripBreaksOnNonSquareCanvas()
+    public void ScalarDY_RoundTripsOnNonSquareCanvas()
     {
-        // WorldDYToCanvasDT scales with canvas WIDTH while CanvasDTToWorldDY
-        // scales with canvas HEIGHT, so dy does not round-trip unless square.
+        // Fixed: WorldDYToCanvasDT now uses canvas HEIGHT, so dy round-trips.
         var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
 
         double roundTripped = mapper.CanvasDTToWorldDY(mapper.WorldDYToCanvasDT(10));
 
-        Assert.NotEqual(10, roundTripped);
-        TestHelpers.Near(10 * 800 / 400, roundTripped);
+        TestHelpers.Near(10, roundTripped);
     }
 
     [Fact]
@@ -324,7 +321,7 @@ public sealed class WorldToCanvasMapperTests
     {
         var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
 
-        TestHelpers.Near(80, mapper.WorldDYToCanvasDT(-10));
+        TestHelpers.Near(40, mapper.WorldDYToCanvasDT(-10));
         TestHelpers.Near(25, mapper.CanvasDTToWorldDY(-100));
         TestHelpers.Near(0, mapper.CanvasDTToWorldDY(0));
         TestHelpers.Near(0, mapper.WorldDXToCanvasDL(0));
@@ -350,23 +347,5 @@ public sealed class WorldToCanvasMapperTests
 
         TestHelpers.Near(new Point(0, 0), mapper.MapWorldToCanvas(new Point(100, 100)));
         TestHelpers.Near(0, mapper.WorldDXToCanvasDL(10));
-    }
-
-    [Fact]
-    public void ShouldBe_WorldDYToCanvasDT_UsesCanvasHeightNumerator()
-    {
-        // RED: WorldDYToCanvasDT must mirror CanvasDTToWorldDY and scale with canvas HEIGHT.
-        var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
-
-        TestHelpers.Near(-10 * 400 / 100, mapper.WorldDYToCanvasDT(10));
-    }
-
-    [Fact]
-    public void ShouldBe_ScalarDY_RoundTripsOnNonSquareCanvas()
-    {
-        // RED: dy -> canvas -> dy must round-trip on any canvas shape.
-        var mapper = TestHelpers.MapperFor(canvasW: 800, canvasH: 400, worldW: 200, worldH: 100);
-
-        TestHelpers.Near(10, mapper.CanvasDTToWorldDY(mapper.WorldDYToCanvasDT(10)));
     }
 }
